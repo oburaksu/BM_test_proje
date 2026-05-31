@@ -36,6 +36,11 @@ jobs:
       run: |
         # Playwright tarayıcılarını kur (E2E testleri için gerekli olabilir)
         playwright install chromium
+        
+        # E2E testleri için uygulamayı arka planda başlat
+        python -m uvicorn src.main:app --host 127.0.0.1 --port 8000 &
+        sleep 5
+        
         # Testleri çalıştır
         pytest -v
 
