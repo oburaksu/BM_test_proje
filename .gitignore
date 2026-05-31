@@ -1,0 +1,41 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# Environment variables
+.env
+
+# Testing and coverage
+.pytest_cache/
+.coverage
+htmlcov/
+test_todo.db
+
+# Database files
+*.db
+*.sqlite3
+
+# Node modules (for Postman/Newman)
+node_modules/
+
+# LocalStack Volume
+volume/
+
+# IDE and OS specific
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Temp files
+~$*
+*.tmp
+*.bak

@@ -1,0 +1,31 @@
+# To-Do List Manager - Python Dependencies
+
+# Web Framework
+fastapi
+uvicorn
+
+# Database
+sqlalchemy
+psycopg2-binary  # PostgreSQL için gerekli adaptör (Testcontainers testleri için)
+
+# Validation & Schemas
+pydantic
+pydantic-settings
+python-dotenv
+
+# AWS / LocalStack (Adım 3)
+boto3
+
+# Testing (Adım 2)
+pytest
+pytest-cov
+httpx
+factory-boy
+faker
+testcontainers
+
+# Monitoring (Adım 5)
+prometheus-fastapi-instrumentator
+
+# E2E Testing (Adım 7)
+pytest-playwright

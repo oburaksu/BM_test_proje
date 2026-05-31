@@ -1,0 +1,233 @@
+{
+  "info": {
+    "name": "To-Do List Manager API",
+    "description": "API Tests for To-Do List Manager using Postman and Newman.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Health Check",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test(\"Response has status=healthy\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.status).to.eql(\"healthy\");",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/health",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "health"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Create Task",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 201\", function () {",
+              "    pm.response.to.have.status(201);",
+              "});",
+              "pm.test(\"Saves task_id to environment\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.environment.set(\"task_id\", jsonData.id);",
+              "    pm.expect(jsonData.title).to.eql(\"Postman Test Task\");",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"Postman Test Task\",\n  \"description\": \"Created via Newman API testing\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/tasks/",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "tasks",
+            ""
+          ]
+        }
+      }
+    },
+    {
+      "name": "Get Task",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test(\"Task matches created task\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.id).to.eql(pm.environment.get(\"task_id\"));",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/tasks/{{task_id}}",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "tasks",
+            "{{task_id}}"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Update Task",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test(\"Task title updated\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.title).to.eql(\"Updated Postman Task\");",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"Updated Postman Task\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/tasks/{{task_id}}",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "tasks",
+            "{{task_id}}"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Toggle Task",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test(\"Task is completed\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.is_completed).to.eql(true);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "PATCH",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/tasks/{{task_id}}/toggle",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "tasks",
+            "{{task_id}}",
+            "toggle"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Delete Task",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/tasks/{{task_id}}",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "tasks",
+            "{{task_id}}"
+          ]
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,68 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Kodu İndir (Checkout)
+      uses: actions/checkout@v4
+
+    - name: Python Kurulumu
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+
+    - name: Bağımlılıkların Yüklenmesi
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install flake8
+
+    - name: 1. Adım - Linting (Kod Kalitesi Kontrolü)
+      run: |
+        # Sadece sözdizimi (syntax) hatalarını ve çok bariz hataları kontrol et
+        flake8 src tests --count --select=E9,F63,F7,F82 --show-source --statistics
+        # Daha genel uyarılar için (bunu şimdilik sadece uyarı olarak bırakıyoruz)
+        flake8 src tests --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+
+    - name: 2. Adım - Pytest (Birim ve Entegrasyon Testleri)
+      run: |
+        # Playwright tarayıcılarını kur (E2E testleri için gerekli olabilir)
+        playwright install chromium
+        # Testleri çalıştır
+        pytest -v
+
+    - name: 3. Adım - Docker Build (İmaj Derleme)
+      run: |
+        # Docker imajının sorunsuz derlenip derlenemediğini kontrol et
+        docker build -t todo-app-test:latest .
+
+    - name: 4. Adım - Deploy (Test Ortamında Ayağa Kaldırma)
+      run: |
+        # Container'ı arka planda çalıştırarak geçici bir deploy simülasyonu yapıyoruz
+        docker run -d --name todo-container -p 8000:8000 -e DATABASE_URL="sqlite:///./todo.db" todo-app-test:latest
+        
+        # Konteynerin tamamen hazır olması için birkaç saniye bekle
+        sleep 5
+        
+        # Çalıştığından emin olmak için loglara bak
+        docker logs todo-container
+
+    - name: 5. Adım - Smoke Test (Sağlık Kontrolü)
+      run: |
+        # API'ın /health endpoint'ine HTTP isteği at ve 200 OK yanıtı geldiğini doğrula
+        HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8000/health)
+        
+        if [ "$HTTP_STATUS" -eq 200 ]; then
+          echo "Smoke test başarılı! Uygulama sağlıklı çalışıyor. Durum Kodu: $HTTP_STATUS"
+        else
+          echo "Smoke test başarısız! Beklenen 200, alınan: $HTTP_STATUS"
+          exit 1
+        fi

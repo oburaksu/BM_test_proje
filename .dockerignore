@@ -1,0 +1,56 @@
+# Git dosyaları
+.git
+.gitignore
+
+# Python ve Ortam Dosyaları
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual Environment
+venv/
+.env/
+env/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Veritabanı
+todo.db
+test_todo.db
+*.sqlite3
+
+# LocalStack Volume
+volume/
+
+# Test Raporları
+htmlcov/
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+.pytest_cache/

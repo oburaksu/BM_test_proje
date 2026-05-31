@@ -1,0 +1,15 @@
+global:
+  scrape_interval: 10s      # Metrikleri ne sıklıkla çekeceğini belirler
+  evaluation_interval: 10s  # Kuralların değerlendirilme sıklığı
+
+scrape_configs:
+  # 1. Prometheus'un kendisini izlediği görev
+  - job_name: "prometheus"
+    static_configs:
+      - targets: ["localhost:9090"]
+
+  # 2. FastAPI uygulamasını (api servisini) izleyen görev
+  - job_name: "fastapi_app"
+    metrics_path: "/metrics"
+    static_configs:
+      - targets: ["api:8000"] # Docker-compose içindeki api servisinin adresi

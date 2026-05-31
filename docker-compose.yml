@@ -1,0 +1,86 @@
+version: '3.8'
+
+services:
+  # 1. FastAPI Uygulaması
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: todo_api
+    ports:
+      - "8000:8000"
+    environment:
+      - APP_NAME=To-Do List Manager (Docker)
+      - DEBUG=false
+      # Veritabanını PostgreSQL olarak değiştirmek isterseniz bu yorumu açın
+      # - DATABASE_URL=postgresql://user:password@postgres:5432/tododb
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+      - AWS_REGION=us-east-1
+      - AWS_ENDPOINT_URL=http://localstack:4566
+      - S3_BUCKET_NAME=todo-bucket
+    depends_on:
+      - localstack
+    volumes:
+      # Veritabanı dosyasının konteyner silinse bile kalıcı olması için
+      - ./todo.db:/app/todo.db
+
+  # 2. LocalStack (AWS Servisleri Simülasyonu - Adım 3)
+  localstack:
+    image: localstack/localstack:latest
+    container_name: todo_localstack
+    ports:
+      - "4566:4566"            # LocalStack Gateway
+      - "4510-4559:4510-4559"  # Servis portları
+    environment:
+      - SERVICES=s3            # Sadece S3 servisini aktif et (performans için)
+      - DEBUG=1
+      - DOCKER_HOST=unix:///var/run/docker.sock
+    volumes:
+      - "${LOCALSTACK_VOLUME_DIR:-./volume}:/var/lib/localstack"
+      - "/var/run/docker.sock:/var/run/docker.sock"
+
+  # 3. PostgreSQL Veritabanı (İsteğe bağlı)
+  postgres:
+    image: postgres:15-alpine
+    container_name: todo_postgres
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=tododb
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  # 4. Prometheus (Monitoring - Adım 5)
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: todo_prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+    depends_on:
+      - api
+
+  # 5. Grafana (Monitoring - Adım 5)
+  grafana:
+    image: grafana/grafana:latest
+    container_name: todo_grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - grafana_data:/var/lib/grafana
+      # Provisioning: otomatik veri kaynağı ve dashboard yükleme
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning
+    depends_on:
+      - prometheus
+
+volumes:
+  postgres_data:
+  grafana_data:

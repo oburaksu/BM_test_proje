@@ -1,0 +1,11 @@
+{
+  "name": "todo-list-manager-api-tests",
+  "version": "1.0.0",
+  "description": "API Test automation using Newman for To-Do List Manager",
+  "scripts": {
+    "test:api": "newman run postman/collection.json -e postman/env.json"
+  },
+  "devDependencies": {
+    "newman": "^6.1.2"
+  }
+}

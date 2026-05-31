@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: todo-app-service
+  labels:
+    app: todo-app
+spec:
+  type: NodePort # Dışarıdan erişim için NodePort kullanıyoruz (Minikube'de test etmesi kolaydır)
+  selector:
+    app: todo-app
+  ports:
+    - protocol: TCP
+      port: 80 # Servisin kendi portu
+      targetPort: 8000 # Konteyner içerisindeki uygulamanın dinlediği port
+      nodePort: 30000 # Dışarıdan erişim sağlanacak sabit port (30000-32767 arası)

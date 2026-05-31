@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: todo-app
+  labels:
+    app: todo-app
+spec:
+  replicas: 1 # Geliştirme ortamı için 1 kopya yeterli
+  selector:
+    matchLabels:
+      app: todo-app
+  template:
+    metadata:
+      labels:
+        app: todo-app
+    spec:
+      containers:
+      - name: todo-app
+        image: todo-app:latest
+        imagePullPolicy: IfNotPresent # Yerel imajları kullanmak için (Minikube'de yararlı)
+        ports:
+        - containerPort: 8000
+          name: http
+        envFrom:
+        - configMapRef:
+            name: todo-app-config # configmap.yaml dosyasından ortam değişkenlerini çeker
+        # Uygulamanın ayakta olup olmadığını kontrol eder (Liveness Probe)
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 10
+          periodSeconds: 15
+        # Uygulamanın istek almaya hazır olup olmadığını kontrol eder (Readiness Probe)
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 5
+          periodSeconds: 10

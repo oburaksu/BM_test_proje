@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>To-Do List Manager (E2E Test Arayüzü)</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 40px auto; padding: 20px; background-color: #f4f4f9; }
+        h1 { color: #333; text-align: center; }
+        .task-container { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .input-group { display: flex; gap: 10px; margin-bottom: 20px; }
+        input[type="text"] { flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 16px; }
+        button { padding: 10px 20px; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; }
+        button:hover { background-color: #0056b3; }
+        ul { list-style-type: none; padding: 0; }
+        li { background: #f9f9f9; margin-bottom: 10px; padding: 15px; border-radius: 4px; border-left: 5px solid #ffc107; display: flex; justify-content: space-between; align-items: center; }
+        li.completed { border-left-color: #28a745; text-decoration: line-through; opacity: 0.7; }
+        .delete-btn { background-color: #dc3545; padding: 5px 10px; font-size: 14px; }
+        .delete-btn:hover { background-color: #c82333; }
+    </style>
+</head>
+<body>
+
+    <h1>Görev Yöneticisi</h1>
+    
+    <div class="task-container">
+        <div class="input-group">
+            <input type="text" id="taskInput" placeholder="Yeni görev ekle..." />
+            <button id="addTaskBtn" onclick="addTask()">Ekle</button>
+        </div>
+        
+        <ul id="taskList">
+            <!-- Görevler buraya yüklenecek -->
+        </ul>
+    </div>
+
+    <script>
+        const API_URL = '/api/tasks';
+
+        // Sayfa yüklendiğinde görevleri çek
+        document.addEventListener('DOMContentLoaded', fetchTasks);
+
+        async function fetchTasks() {
+            try {
+                const response = await fetch(API_URL);
+                const tasks = await response.json();
+                renderTasks(tasks);
+            } catch (error) {
+                console.error("Görevler çekilirken hata oluştu:", error);
+            }
+        }
+
+        function renderTasks(tasks) {
+            const taskList = document.getElementById('taskList');
+            taskList.innerHTML = '';
+            
+            tasks.forEach(task => {
+                const li = document.createElement('li');
+                li.className = task.is_completed ? 'completed' : '';
+                li.setAttribute('data-testid', `task-${task.id}`);
+                
+                const titleSpan = document.createElement('span');
+                titleSpan.textContent = task.title;
+                titleSpan.className = 'task-title';
+                
+                const actionsDiv = document.createElement('div');
+                
+                // Tamamla Butonu
+                const toggleBtn = document.createElement('button');
+                toggleBtn.textContent = task.is_completed ? 'Geri Al' : 'Tamamla';
+                toggleBtn.style.marginRight = '10px';
+                toggleBtn.style.backgroundColor = task.is_completed ? '#6c757d' : '#28a745';
+                toggleBtn.className = 'toggle-btn';
+                toggleBtn.onclick = () => toggleTask(task.id);
+                
+                // Sil Butonu
+                const deleteBtn = document.createElement('button');
+                deleteBtn.textContent = 'Sil';
+                deleteBtn.className = 'delete-btn';
+                deleteBtn.onclick = () => deleteTask(task.id);
+                
+                actionsDiv.appendChild(toggleBtn);
+                actionsDiv.appendChild(deleteBtn);
+                
+                li.appendChild(titleSpan);
+                li.appendChild(actionsDiv);
+                
+                taskList.appendChild(li);
+            });
+        }
+
+        async function addTask() {
+            const input = document.getElementById('taskInput');
+            const title = input.value.trim();
+            
+            if (!title) return;
+
+            try {
+                const response = await fetch(API_URL + '/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ title: title, description: 'Arayüzden eklendi' })
+                });
+
+                if (response.ok) {
+                    input.value = '';
+                    fetchTasks(); // Listeyi yenile
+                }
+            } catch (error) {
+                console.error("Görev eklenirken hata:", error);
+            }
+        }
+
+        async function toggleTask(id) {
+            try {
+                const response = await fetch(`${API_URL}/${id}/toggle`, {
+                    method: 'PATCH'
+                });
+                
+                if (response.ok) {
+                    fetchTasks();
+                }
+            } catch (error) {
+                console.error("Durum değiştirilirken hata:", error);
+            }
+        }
+
+        async function deleteTask(id) {
+            try {
+                const response = await fetch(`${API_URL}/${id}`, {
+                    method: 'DELETE'
+                });
+                
+                if (response.ok) {
+                    fetchTasks();
+                }
+            } catch (error) {
+                console.error("Silinirken hata:", error);
+            }
+        }
+    </script>
+</body>
+</html>
