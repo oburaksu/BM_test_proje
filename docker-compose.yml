@@ -21,23 +21,20 @@ services:
       - S3_BUCKET_NAME=todo-bucket
     depends_on:
       - localstack
-    volumes:
-      # Veritabanı dosyasının konteyner silinse bile kalıcı olması için
-      - ./todo.db:/app/todo.db
 
   # 2. LocalStack (AWS Servisleri Simülasyonu - Adım 3)
   localstack:
     image: localstack/localstack:latest
     container_name: todo_localstack
     ports:
-      - "4566:4566"            # LocalStack Gateway
-      - "4510-4559:4510-4559"  # Servis portları
+      - "4566:4566" # LocalStack Gateway
+      - "4510-4559:4510-4559" # Servis portları
     environment:
-      - SERVICES=s3            # Sadece S3 servisini aktif et (performans için)
+      - SERVICES=s3 # Sadece S3 servisini aktif et (performans için)
       - DEBUG=1
       - DOCKER_HOST=unix:///var/run/docker.sock
     volumes:
-      - "${LOCALSTACK_VOLUME_DIR:-./volume}:/var/lib/localstack"
+      - localstack_data:/var/lib/localstack
       - "/var/run/docker.sock:/var/run/docker.sock"
 
   # 3. PostgreSQL Veritabanı (İsteğe bağlı)
@@ -55,12 +52,12 @@ services:
 
   # 4. Prometheus (Monitoring - Adım 5)
   prometheus:
-    image: prom/prometheus:latest
+    build:
+      context: ./monitoring
+      dockerfile: Dockerfile.prometheus
     container_name: todo_prometheus
     ports:
       - "9090:9090"
-    volumes:
-      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
     depends_on:
@@ -68,7 +65,9 @@ services:
 
   # 5. Grafana (Monitoring - Adım 5)
   grafana:
-    image: grafana/grafana:latest
+    build:
+      context: ./monitoring
+      dockerfile: Dockerfile.grafana
     container_name: todo_grafana
     ports:
       - "3000:3000"
@@ -76,11 +75,10 @@ services:
       - GF_SECURITY_ADMIN_PASSWORD=admin
     volumes:
       - grafana_data:/var/lib/grafana
-      # Provisioning: otomatik veri kaynağı ve dashboard yükleme
-      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning
     depends_on:
       - prometheus
 
 volumes:
   postgres_data:
   grafana_data:
+  localstack_data:
