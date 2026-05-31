@@ -44,6 +44,9 @@ jobs:
         
         # Testleri çalıştır (Hata olursa logları yazdır)
         pytest -v || (echo "--- UVICORN LOGS ---" && cat uvicorn.log && exit 1)
+        
+        # 4. adımdaki Docker deploy işlemi için 8000 portunu serbest bırak
+        pkill -f uvicorn || true
 
     - name: 3. Adım - Docker Build (İmaj Derleme)
       run: |
