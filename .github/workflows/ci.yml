@@ -34,15 +34,16 @@ jobs:
 
     - name: 2. Adım - Pytest (Birim ve Entegrasyon Testleri)
       run: |
-        # Playwright tarayıcılarını kur (E2E testleri için gerekli olabilir)
-        playwright install chromium
+        # Playwright tarayıcılarını kur (Linux için --with-deps gereklidir)
+        playwright install --with-deps chromium
         
-        # E2E testleri için uygulamayı arka planda başlat
-        python -m uvicorn src.main:app --host 127.0.0.1 --port 8000 &
+        # E2E testleri için uygulamayı arka planda başlat ve logla
+        export PYTHONPATH=.
+        nohup python -m uvicorn src.main:app --host 127.0.0.1 --port 8000 > uvicorn.log 2>&1 &
         sleep 5
         
-        # Testleri çalıştır
-        pytest -v
+        # Testleri çalıştır (Hata olursa logları yazdır)
+        pytest -v || (echo "--- UVICORN LOGS ---" && cat uvicorn.log && exit 1)
 
     - name: 3. Adım - Docker Build (İmaj Derleme)
       run: |
